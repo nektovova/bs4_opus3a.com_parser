@@ -51,13 +51,18 @@ def parse_all_items_in_category(category_url, need_we_check_item):
             print('Error 403 or 404')
             return
         
-
         soup = BeautifulSoup(page.content, "html.parser")
         
         # чекаем случился ли редирект
         title = soup.find('title').text
         if title == 'Opus3a - Plak, LP, CD, DVD - Müzik Market':
             print('Redirected, finish')
+            return
+
+        # чекаем, может нет товаров
+        no_items_in_category = soup.find('div', attrs={'style': 'font-size: 15px;'}).text.strip()
+        if no_items_in_category == 'Ürün bulunmamaktadır.':
+            print('Embpty category, finish')
             return
 
         # найдем все div товаров и положим их в список mydivs
@@ -69,6 +74,7 @@ def parse_all_items_in_category(category_url, need_we_check_item):
             try: 
                 name = re.sub('\"', '', div_element.find("div", class_="plak-name wordwrap").text.strip())
                 name = re.sub("\'", "''", name)
+                # name = "Rachmaninoff Preludes - tudes-Tableaux - Moments Musicaux"
                 # get url of item
                 item_url = re.sub('.*\/', '', div_element.find_all('a', href=True)[0]['href'])
 
@@ -87,10 +93,12 @@ def parse_all_items_in_category(category_url, need_we_check_item):
             except:
                 print("Something went wrong")
                 print(url)
+                name = name.encode('utf-8')
                 print(name)
                 
             # если с данными все в порядке, то продолжаем
             else:
+                # print('ok')
                 '''
                 print("= = = = =\n= = = = =\n= = = = =\n= = = = =\n= = = = =\n")
                 print('category url:')
@@ -99,7 +107,6 @@ def parse_all_items_in_category(category_url, need_we_check_item):
                 print('item url:')
                 print(item_url)
                 '''
-                print(name)
     
                 if price in ('Tükendi', 'Yakında'): # останавливаем парсинг если цен больше нет.
                     # print('finish, exit loop')
@@ -130,7 +137,15 @@ def parse_all_items_in_category(category_url, need_we_check_item):
 
                     # добавление в базу данных
                     db.create_table()
-                    db.add_data(name, singer_name, category_url, item_format, release_year, barcode, price, item_url)
+                    try:
+                        db.add_data(name, singer_name, category_url, item_format, release_year, barcode, price, item_url)
+                    except:
+                        print('error adding to DB')
+                        print(url)
+                        name = name.encode('utf-8')
+                        print(name)
+
+                    
                     #db.get_data()
 
                     # print('===========')

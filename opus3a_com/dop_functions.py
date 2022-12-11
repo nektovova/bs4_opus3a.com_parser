@@ -26,7 +26,7 @@ def get_url_list():
     filtered_list = list(set(filtered_list))
 
     # print списка
-    # print(filtered_list)
+    print(filtered_list)
 
     # возврат списка из функции
     return filtered_list
@@ -88,6 +88,7 @@ def parse_all_items_in_category(category_url, need_we_check_item):
                 
                 item_format = re.sub('\"', ' inch', div_element.find("div", class_="format").text.strip())
                 image = re.sub('\/MID2\/', '/max/', div_element.find('img')['src'])
+                print(image)
                 price = div_element.find("div", class_="price").text.strip()
             # если выявлена ошибка, то пока пропускаем поле
             except:
@@ -138,7 +139,7 @@ def parse_all_items_in_category(category_url, need_we_check_item):
                     # добавление в базу данных
                     db.create_table()
                     try:
-                        db.add_data(name, singer_name, category_url, item_format, release_year, barcode, price, item_url)
+                        db.add_data(name, singer_name, image, category_url, item_format, release_year, barcode, price, item_url)
                     except:
                         print('error adding to DB')
                         print(url)
